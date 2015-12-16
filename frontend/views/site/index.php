@@ -2,7 +2,7 @@
 
 /* @var $this yii\web\View */
 
-$this->title = 'My Yii Application';
+$this->title = 'Автозапчасти, каталог запчастей, запчасти для иномарок в магазине ИталАвто';
 ?>
 <div class="site-index">
 
