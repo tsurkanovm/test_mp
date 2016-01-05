@@ -17,6 +17,7 @@ class ConverterTest extends \Codeception\TestCase\Test
     private $data_in;
     private $data_out;
 
+
     public function _before()
     {
         $this->converter = new Converter();

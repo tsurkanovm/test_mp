@@ -11,70 +11,79 @@ class CsvParsingTest extends \Codeception\TestCase\Test
     /**
      * @var \UnitTester
      */
-    private $options;
-    private $file_path;
-    protected $csv_parser;
-    protected $data;
 
-    public function _before()
+    protected static $data;
+
+    public static function setUpBeforeClass()
     {
-        $this->options =  ['csv' =>
-            ['template' =>
-                ['class' => 'yii\multiparser\CsvParser',
-                    'keys' => [
-                        0 => 'Description',
-                        1 => 'Article',
-                        2 => 'Price',
-                        3 => 'Brand',
-                        4 => 'Count',
-                    ],
-                    'converter_conf' => [
-                        'class' => 'yii\multiparser\Converter',
-                        'configuration' => ["encode" => 'Description',
-                            "string" => ['Description', 'Brand'],
-                            "float" => 'Price',
-                            "integer" => 'Count'
+        $options =
+            ['csv' =>
+                ['template' =>
+                    ['class' => 'yii\multiparser\CsvParser',
+                        'keys' => [
+                            0 => 'Description',
+                            1 => 'Article',
+                            2 => 'Price',
+                            3 => 'Brand',
+                            4 => 'Count',
+                        ],
+                        'converter_conf' => [
+                            'class' => 'yii\multiparser\Converter',
+                            'configuration' => ["encode" => 'Description',
+                                "string" => ['Description', 'Brand'],
+                                "float" => 'Price',
+                                "integer" => 'Count'
+                            ],
                         ],
                     ],
                 ],
-            ],
-        ];
+            ];
 
-        $this->file_path = Yii::getAlias('@tests') . '\template.csv';
+        $file_path = Yii::getAlias('@tests') . '\template.csv';
 
         $ph = new YiiParserHandler();
-        $ph->setConfiguration( $this->options );
-        $this->csv_parser = Stub::make( new YiiMultiparser(), ['parserHandler' => $ph] );
+        $ph->setConfiguration( $options );
+        $csv_parser = Stub::make( new YiiMultiparser(), ['parserHandler' => $ph] );
 
-        if (!$this->csv_parser)
-            $this->markTestSkipped('Parser handler do not initialized.');
+        if (!$csv_parser)
+            self::markTestSkipped('Parser handler do not initialized.');
 
-        $this->data = $this->csv_parser->parse( $this->file_path );
+        self::$data = $csv_parser->parse( $file_path, ['mode' => 'template'] );
     }
 
 
-    public function dataProvider(){
 
-        return $this->data;
+    public function testOnEmptyResult( ){
+
+        $this->assertNotEmpty( self::$data , 'Output array is empty' );
+
     }
 
     /**
-     * @dataProvider dataProvider
+     * @depends testOnEmptyResult
      */
-    public function testEmptyCsv( $data ){
+    public function testOnAssocResult( ){
 
-        $this->assertNotEmpty( $data, 'Output array is empty' );
+        $this->assertArrayHasKey( 'Article', self::$data[0], 'Output array does`t have key - Article'  );
+        $this->assertArrayHasKey( 'Count', self::$data[1], 'Output array does`t have key - Count'  );
+        $this->assertArrayHasKey( 'Description', self::$data[2], 'Output array does`t have key - Description'  );
+        $this->assertArrayHasKey( 'Price', self::$data[3], 'Output array does`t have key - Price'  );
+        $this->assertArrayHasKey( 'Price', self::$data[13], 'Output array does`t have key - Brand'  );
 
     }
+
     /**
-     * @depends testEmptyCsv
-     * @dataProvider dataProvider
+     * @depends testOnEmptyResult
      */
-    public function testKeysCsv( $data ){
+    public function testOnFullResult( ){
 
-        $this->assertArrayHasKey( 'Article', $data, 'Output array don`t have key - Article'  );
+        $this->assertEquals( 16, count( self::$data ), 'Output array does`t have 16 rows'  );
 
-        $this->assertTrue(true);
-   }
+    }
+
+
+
+
+
 
 }
