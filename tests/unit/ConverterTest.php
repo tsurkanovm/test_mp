@@ -45,7 +45,6 @@ class ConverterTest extends \Codeception\TestCase\Test
             "integer2"   =>  45.45,
         ];
 
-
     }
 
     public function testConvertByConfig(){

@@ -40,8 +40,8 @@ class Cest extends CodeceptionTestCase implements
     {
         $this->scenario->setFeature($this->getSpecFromMethod());
         $code = $this->getRawBody();
-        $this->parser->parseFeature($code);
-        $this->parser->attachMetadata(Annotation::forMethod($this->testClassInstance, $this->testMethod)->raw());
+        $this->csv_parser->parseFeature($code);
+        $this->csv_parser->attachMetadata(Annotation::forMethod($this->testClassInstance, $this->testMethod)->raw());
         $this->di->injectDependencies($this->testClassInstance);
         $this->fire(Events::TEST_PARSED, new TestEvent($this));
     }

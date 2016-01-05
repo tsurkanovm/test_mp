@@ -44,7 +44,7 @@ trait Actor
     /**
      * @var \Codeception\Lib\Parser
      */
-    protected $parser;
+    protected $csv_parser;
 
     /**
      * @var \PHPUnit_Framework_TestResult
@@ -61,7 +61,7 @@ trait Actor
             'name'    => $this->testName
         ]
         );
-        $this->parser = new Parser($this->scenario);
+        $this->csv_parser = new Parser($this->scenario);
         return $this;
     }
 

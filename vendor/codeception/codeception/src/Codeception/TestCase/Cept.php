@@ -49,7 +49,7 @@ class Cept extends CodeceptionTestCase implements
 
     public function preload()
     {
-        $this->parser->prepareToRun($this->getRawBody());
+        $this->csv_parser->prepareToRun($this->getRawBody());
         $this->fire(Events::TEST_PARSED, new TestEvent($this));
     }
 

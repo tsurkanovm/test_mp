@@ -14,6 +14,6 @@ $config = yii\helpers\ArrayHelper::merge(
 
 );
 
-Yii::setAlias('@tests', dirname(__DIR__));
+Yii::setAlias('@tests', dirname(__DIR__) . '/tests/_data/');
 
 $application  = new yii\web\Application($config);
