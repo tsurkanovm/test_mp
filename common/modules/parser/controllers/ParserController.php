@@ -1,14 +1,16 @@
 <?php
-namespace backend\controllers;
+namespace common\modules\parser\controllers;
 
-use backend\models\UploadFileParsingForm;
+use common\components\CustomVarDamp;
+use common\modules\parser\models\UploadFileParsingForm;
 use Yii;
-use yii\base\ErrorException;
+use yii\base\UserException;
 use yii\data\ArrayDataProvider;
 use yii\helpers\VarDumper;
 use yii\multiparser\DynamicFormHelper;
 use yii\web\Controller;
 use yii\web\UploadedFile;
+use common\modules\parser\widgets\ParserView;
 
 
 /**
@@ -16,86 +18,63 @@ use yii\web\UploadedFile;
  */
 class ParserController extends Controller
 {
-    /**
-     * @var - string
-     * file parsing extension
-     */
-    protected $file_extension;
 
-    public function actionIndex($mode = 0)
+    public function actionIndex($scenario = '')
     {
+
+       // CustomVarDamp::dumpAndDie(Yii::$app->controller->module->errorHandler);
+        //CustomVarDamp::dumpAndDie($module = Yii::$app->controller->module->errorHandler);
         $model = new UploadFileParsingForm();
-        return $this->render('index', ['model' => $model]);
+        return $this->render('index', [
+            'options' => ['model' => $model,
+            'title' => 'Вставьте свой заголовок сценария'
+                ],
+        ]);
     }
 
     public function actionRead()
     {
         $model = new UploadFileParsingForm();
+        $this->validateUploadForm( $model );
         $data = [];
-        $mode = '';
-        if ($model->load(\Yii::$app->request->post())) {
-            if (!$model->file_type) {
-                $model->file = UploadedFile::getInstance($model, 'file');
-            }
-            if ($model->validate()) {
-                // get the extension of user chosen file
-                $this->file_extension = $this->getFileExtensionFromModel($model);
+        // parse -> data, read from $model->tempName
+        // slice -> data
 
-                if ($model->file_type) {
-                    $model->file_path = dirname(dirname(__DIR__)) . '/tests/_data/template.' . $this->file_extension;
-                    $mode = 'template';
-                } else {
-                    $mode = 'custom';
-                    $model->file_path = dirname(dirname(__DIR__)) . '/tests/_data/custom_template.' . $this->file_extension;
-                    $model->file->saveAs($model->file_path);
-                }
+        //Yii::$app->getCache()->set('parser_data', json_encode($data), 300);
+        return json_encode( Yii::$app->request->post() );
 
-                // run parsing
-                $data = $model->readFile(['mode' => $mode]);
+    }
 
-                if ($mode == 'custom' && file_exists($model->file_path)) {
-                    unlink($model->file_path);
-                }
-                // safe parse data to cache
-                Yii::$app->getCache()->set('parser_data', json_encode($data), 300);
+    public function validateUploadForm( &$model )
+    {
+        //throw new UserException( 3443434343434 );
+        if ($model->load(Yii::$app->request->post())) {
+            $model->file = UploadedFile::getInstance( $model, 'file' );
 
-            } else {
+            if ( !$model->validate() ) {
                 // handle with error validation form
                 $errors_str = 'Error upload form';
                 foreach ($model->getErrors() as $error) {
                     $errors_str .= ' ' . implode(array_values($error));
                 }
 
-                throw new ErrorException($errors_str);
+                throw new UserException( $errors_str );
             }
+        } else{
 
-        } elseif (Yii::$app->getCache()->get('parser_data')) {
-            // it's  a get request, so retrive data from cache
-            $data = json_decode(Yii::$app->getCache()->get('parser_data'), true);
+            throw new UserException( 'Ошибка загрузки данных в форму' );
         }
-
-        return $this->renderResultView($data, $mode);
     }
 
-    public function getFileExtensionFromModel($model)
+    public function actionError()
     {
-        switch ($model->file_type) {
-            case 0:
-                return $model->file->extension;
-            case 1:
-                return 'csv';
-            case 2:
-                return 'xml';
-            case 3:
-                return 'xlsx';
-            case 4:
-                return 'xls';
-            case 5:
-                return 'txt';
-            default:
-                return 'csv';
-        }
+        $exception = Yii::$app->errorHandler->exception;
 
+        if ( $exception !== null ) {
+            $msg =  $exception->getMessage();
+            //return $this->render( 'index',  ['options' => ['title' => $msg]] );
+            return $msg;
+        }
     }
 
     public function renderResultView($data )

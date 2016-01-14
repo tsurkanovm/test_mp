@@ -10,7 +10,7 @@ use common\components\CustomVarDamp;
 /**
  * UploadForm is the model behind the upload form.
  */
-class UploadFileParsingForm extends Model
+class UploadFileParsingForm_old extends Model
 {
     /**
      * @var UploadedFile file attribute
