@@ -177,6 +177,6 @@ return [
         ],
 	],
 	'params' => [
-		'test' => 'Hello',
+	//	'file_path' => $file_path,
 	],
 ];

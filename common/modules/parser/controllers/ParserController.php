@@ -6,11 +6,11 @@ use common\modules\parser\models\UploadFileParsingForm;
 use Yii;
 use yii\base\UserException;
 use yii\data\ArrayDataProvider;
-use yii\helpers\VarDumper;
 use yii\multiparser\DynamicFormHelper;
 use yii\web\Controller;
+use yii\web\HttpException;
+use yii\web\Response;
 use yii\web\UploadedFile;
-use common\modules\parser\widgets\ParserView;
 
 
 /**
@@ -34,36 +34,59 @@ class ParserController extends Controller
 
     public function actionRead()
     {
-        $model = new UploadFileParsingForm();
-        $this->validateUploadForm( $model );
-        $data = [];
-        // parse -> data, read from $model->tempName
-        // slice -> data
 
-        //Yii::$app->getCache()->set('parser_data', json_encode($data), 300);
-        return json_encode( Yii::$app->request->post() );
+        $post = Yii::$app->request->post();
+
+        $model = new UploadFileParsingForm();
+        if( empty( $post ) &&  !empty( $_FILES ) ){
+            if( move_uploaded_file( $_FILES[0]['tmp_name'], Yii::$aliases['@file_path'] . '/'.basename($_FILES[0]['name'])))
+            {
+                Yii::$app->session->setFlash('file_name', basename($_FILES[0]['name']));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        $this->validateUploadForm( $model );
+
+        return $this->renderAjax('index', [
+            'options' => ['title' => 'Успешно',
+                'mode' => 'message']
+        ]);
+            //$data = [];
+            // parse -> data, read from $model->tempName
+            // slice -> data
+
+            //Yii::$app->getCache()->set('parser_data', json_encode($data), 300);
+            // return json_encode( Yii::$app->request->post() );
+            //return 45;
+
 
     }
 
     public function validateUploadForm( &$model )
     {
-        //throw new UserException( 3443434343434 );
-        if ($model->load(Yii::$app->request->post())) {
-            $model->file = UploadedFile::getInstance( $model, 'file' );
+
+        if ( $model->load(Yii::$app->request->post()) ) {
+            $model->file = Yii::$app->session->getFlash('file_name');
 
             if ( !$model->validate() ) {
                 // handle with error validation form
-                $errors_str = 'Error upload form';
-                foreach ($model->getErrors() as $error) {
+                $errors_str = 'Error upload form:';
+                foreach ( $model->getErrors() as $error ) {
                     $errors_str .= ' ' . implode(array_values($error));
                 }
 
-                throw new UserException( $errors_str );
+                throw new HttpException( 200, $errors_str );
             }
         } else{
 
-            throw new UserException( 'Ошибка загрузки данных в форму' );
+            throw new HttpException( 200, 'Ошибка загрузки данных в форму' );
         }
+
     }
 
     public function actionError()
@@ -72,8 +95,19 @@ class ParserController extends Controller
 
         if ( $exception !== null ) {
             $msg =  $exception->getMessage();
-            //return $this->render( 'index',  ['options' => ['title' => $msg]] );
-            return $msg;
+
+            if (Yii::$app->has('response')) {
+                $response = Yii::$app->getResponse();
+            } else {
+                $response = new Response();
+            }
+
+            $response->data = $this->renderAjax('index', [
+                'options' => ['title' => $msg,
+                    'mode' => 'message']
+            ]);
+
+            return $response;
         }
     }
 
