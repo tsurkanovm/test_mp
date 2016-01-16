@@ -3,31 +3,32 @@ $(document).ready(
 
         var container = $("#data-container");
         var read_form = $("#read-form");
+        var file_input = $("input[type=file]");
+        var safe_action = read_form.data('save_action');
 
         var files;
 
         // Add events for file input
-        $('input[type=file]').on('change', prepareUpload);
+        $(document).on('change', file_input ,prepareUpload);
+
+        $(document).on('beforeSubmit', read_form, beforeSubmitReadForm);
 
         // Grab the files and set them to our variable
         function prepareUpload(event)
         {
             files = event.target.files;
-            console.log(files);
         }
 
-        $(document).on('beforeSubmit', "#read-form", function(){
+        function beforeSubmitReadForm (){
 
             var data = new FormData(read_form);
             $.each(files, function(key, value)
             {
                 data.append(key, value);
-                //formData.set(name, value, filename);
             });
 
-            console.log(data);
             $.ajax({
-                url: read_form.attr('action'),
+                url: safe_action,
                 type: 'POST',
                 data: data,
                 cache: false,
@@ -37,7 +38,7 @@ $(document).ready(
                 {
                     $.post(read_form.attr('action'), read_form.serialize()).done(
                         function(result) {
-                            container.text( result );
+                            container.html( result );
                         }
                     ).fail(
                         function(){
@@ -49,14 +50,14 @@ $(document).ready(
                 error: function(jqXHR, textStatus, errorThrown)
                 {
 
-                    console.log('ERRORS: ' + textStatus);
+                    container.text( 'Ошибка загрузки файла на сервер' );
 
                 }
             });
 
 
             return false;
-        } );
+        }
 
     }
 )

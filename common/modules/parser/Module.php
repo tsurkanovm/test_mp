@@ -8,7 +8,7 @@ class Module extends \yii\base\Module
 		parent::init();
 
         $this->setAliases([
-            '@file_path' => dirname(__DIR__). '/files/',
+            '@file_path' => dirname(__DIR__). '/parser/files',
         ]);
 
 		\Yii::configure($this, require(__DIR__.'/config.php'));
