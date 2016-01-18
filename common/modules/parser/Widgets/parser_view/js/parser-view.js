@@ -21,12 +21,13 @@ $(document).ready(
 
         function beforeSubmitReadForm (){
 
+            console.log(files);
             var data = new FormData(read_form);
             $.each(files, function(key, value)
             {
                 data.append(key, value);
             });
-
+            console.log(data);
             $.ajax({
                 url: safe_action,
                 type: 'POST',

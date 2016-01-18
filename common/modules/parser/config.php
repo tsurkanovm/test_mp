@@ -4,10 +4,9 @@ return [
 	'components' => [
         'multiparser'=>[
             'class' => 'yii\multiparser\YiiMultiparser',
-            'configuration' => require(__DIR__.'/parser_config.php'),
         ],
 	],
 	'params' => [
-	//	'file_path' => $file_path,
+        'scenarios_config' => require(__DIR__ . '/scenarios_config.php'),
 	],
 ];

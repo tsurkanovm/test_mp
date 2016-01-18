@@ -51,6 +51,10 @@ class ParserView extends Widget{
         if ( !empty( $this->options['data'] ) ) {
             $data = $this->options['data'];
         }
+        $basic_columns = [];
+        if ( !empty( $this->options['basic_columns'] ) ) {
+            $basic_columns = $this->options['basic_columns'];
+        }
 
         $provider = new ArrayDataProvider([
             'allModels' => $data,
@@ -78,24 +82,12 @@ class ParserView extends Widget{
         $header_counts = $last_index + 1; // - количество колонок выбора формы предпросмотра
         $header_model = DynamicFormHelper::CreateDynamicModel($header_counts);
 
-        // колонки для выбора возьмем из конфигурационного файла
-        //$basicColumns = \Yii::$app->multiparser->getConfiguration($this->file_extension, 'basic_column');
-        $basicColumns = [
-                        Null => 'Пусто',
-                        "BRAND" => 'Бренд',
-                        "ARTICLE" => 'Артикул',
-                        "PRICE" => 'Цена',
-                        "DESCR" => 'Наименование',
-                        "BOX" => 'Колво',
-                        "ADD_BOX" => 'В пути',
-                        "GROUP" => 'Группа RG'
-                        ];
 
         return $this->render('data',
             ['model' => $data,
                 'header_model' => $header_model,
                 // список колонок для выбора
-                'basic_column' => $basicColumns,
+                'basic_column' => $basic_columns,
                 'dataProvider' => $provider]);
     }
 

@@ -33,7 +33,7 @@ class CsvParsingTest extends \Codeception\TestCase\Test
         if (!$csv_parser)
             self::markTestSkipped('Parser handler do not initialized.');
 
-        self::$data = $csv_parser->parse( self::$file_path, ['mode' => 'template'] );
+        self::$data = $csv_parser->parse( self::$file_path );
     }
 
 
@@ -41,7 +41,7 @@ class CsvParsingTest extends \Codeception\TestCase\Test
 
         self::$options =
             ['csv' =>
-                ['template' =>
+
                     ['class' => 'yii\multiparser\CsvParser',
                         'keys' => [
                             0 => 'Description',
@@ -59,7 +59,6 @@ class CsvParsingTest extends \Codeception\TestCase\Test
                             ],
                         ],
                     ],
-                ],
             ];
 
         $this->parseFileByOptions( self::$options );
@@ -84,11 +83,11 @@ class CsvParsingTest extends \Codeception\TestCase\Test
     public function setOptionDataProvider(){
 
         $opt = [
-            [7, ['csv' => ['template' => ['first_line' => 10],],]],
-            [8, ['csv' => ['template' => ['first_line' => 10,  'has_header_row' => false],],]],
-            [17, ['csv' => ['template' => ['has_header_row' => false],],]],
-            [3, ['csv' => ['template' => ['last_line' => 3, 'has_header_row' => false],],]],
-            [2, ['csv' => ['template' => ['last_line' => 3],],]]
+            [7, ['csv' => ['first_line' => 10],],],
+            [8, ['csv' => ['first_line' => 10,  'has_header_row' => false],],],
+            [17, ['csv' =>  ['has_header_row' => false],],],
+            [3, ['csv' =>  ['last_line' => 3, 'has_header_row' => false],],],
+            [2, ['csv' =>  ['last_line' => 3],],]
         ];
 
         return $opt;
@@ -113,10 +112,7 @@ class CsvParsingTest extends \Codeception\TestCase\Test
 
         self::$options =
             ['csv' =>
-                ['template' =>
                     ['class' => 'yii\multiparser\CsvParser',
-
-                    ],
                 ],
             ];
 

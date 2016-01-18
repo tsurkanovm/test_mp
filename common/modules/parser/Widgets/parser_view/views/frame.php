@@ -27,8 +27,8 @@ echo Html::tag( 'h3', $title );
         if ( $model ) {
 
             echo $form->field($model, 'file',['options' =>['class' => 'col-md-4']])->fileInput()->label( false );
-            //echo Html::label('Показать','uploadfileparsingform-show' ,['options' =>['class' => 'col-md-1','display' => 'block']]);
-            echo $form->field($model, 'show',['options' =>['class' => 'col-md-1']])->dropDownList(array_combine( $show_arr, $show_arr ) )->label( false );
+            //echo Html::tag('div','Показать:' ,['options' =>['class' => 'col-md-2']]);
+            echo $form->field($model, 'read_line_end',['options' =>['class' => 'col-md-2']])->dropDownList(array_combine( $show_arr, $show_arr ) )->label( false );
 
         }
         $this->endBlock();
@@ -38,8 +38,10 @@ echo Html::tag( 'h3', $title );
 
         echo Html::tag('div', Html::submitButton('Прочитать', ['class' => 'btn btn-primary']),['class' => 'form-group col-md-2']);
 
-        echo Html::tag('div','',['id' => 'data-container']);
         ActiveForm::end();
         ?>
 
 </div>
+
+<?php
+echo  Html::tag('div','',['id' => 'data-container', 'class' => 'row']);

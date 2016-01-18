@@ -17,16 +17,31 @@ class UploadFileParsingForm extends Model
      */
     // chosen file
     public $file;
-    public $show;
+    // how many rows of readed array we showed to user
+    public $read_line_end;
+    // first row to write in DB
+    public $write_line_begin;
+    // last row to write in DB
+    public $write_line_end;
+
+    // attribute for parser extensions
+    protected $extensions;
+    // parser configuration, use for define parser extensions
+    public $parser_config;
+
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+        $this->extensions = array_keys( $this->parser_config );
+    }
 
 
     public function rules()
     {
-
         return [
-            ['show', 'in', 'range' => [10, 100, 'all'] ],
+            ['read_line_end', 'in', 'range' => [10, 100, 'все'] ],
             ['file', 'required'],
-            [['file'], 'file', 'extensions' => ['csv', 'xlsx', 'xml', 'xls', 'txt'], 'checkExtensionByMimeType' => false ],
+            [['file'], 'file', 'extensions' =>  $this->extensions, 'checkExtensionByMimeType' => false ],
         ];
     }
 
