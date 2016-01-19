@@ -12,6 +12,7 @@ namespace common\modules\parser\widgets\parser_view;
 use yii\base\Widget;
 use yii\data\ArrayDataProvider;
 use yii\multiparser\DynamicFormHelper;
+use yii\web\HttpException;
 
 class ParserView extends Widget{
     public $options;
@@ -56,14 +57,16 @@ class ParserView extends Widget{
             $basic_columns = $this->options['basic_columns'];
         }
 
+        if ( empty( $this->options['model'] ) ) {
+            throw new HttpException(200, 'Ошибка виджета. Не передана модель для валидации записываемых данных.');
+        }
+        $model = $this->options['model'];
+
         $provider = new ArrayDataProvider([
             'allModels' => $data,
-//            'pagination' => [
-//                'pageSize' => 10,
-//            ],
         ]);
 
-        if (empty($data[0])) {
+        if ( empty( $data[0] ) ) {
             // если нет первого ряда - это xml custom-файл с вложенными узлами, массив ассоциативный (дерево),
             // такой массив нет возможности вывести с помощью GridView
             // просто выведем его как есть
@@ -71,24 +74,24 @@ class ParserView extends Widget{
             return print_r($data);
         }
 
-        // $mode == 'custom' and not xml
-        // для произвольного файла создадим страницу предпросмотра
-        // с возможностью выбора соответсвий колонок с отпарсенными данными
-        //колонки для выбора возьмем из конфигурационного файла - опция - 'basic_column'
-
         // создадим динамическую модель на столько реквизитов сколько колонок в отпарсенном файле
         // в ней пользователь произведет свой выбор
-        $last_index = end(array_flip($data[0]));
-        $header_counts = $last_index + 1; // - количество колонок выбора формы предпросмотра
-        $header_model = DynamicFormHelper::CreateDynamicModel($header_counts);
-
+        $header_model = $this->createDynamicModel( $data[0] );
 
         return $this->render('data',
             ['model' => $data,
                 'header_model' => $header_model,
                 // список колонок для выбора
                 'basic_column' => $basic_columns,
+                'write_model' => $model,
                 'dataProvider' => $provider]);
     }
 
+    protected function createDynamicModel( array $header ){
+        $last_index = end( array_flip( $header ) );
+        $header_counts = $last_index + 1; // - количество колонок выбора формы предпросмотра
+        $header_model = DynamicFormHelper::CreateDynamicModel( $header_counts );
+
+        return $header_model;
+    }
 }

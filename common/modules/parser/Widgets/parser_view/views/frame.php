@@ -21,14 +21,12 @@ echo Html::tag( 'h3', $title );
             $model = $params['model'];
         }
 
-        $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data', 'id' => 'read-form', 'data-save_action' => Url::to( ['parser/save'] )],'action'=>['parser/read']]);
+        $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data', 'id' => 'read-form', 'data-save_action' => Url::to( ['parser/save'] ), 'class' => 'form-inline'],'action'=>['parser/read']]);
 
         $this->beginBlock('model_data');
         if ( $model ) {
-
             echo $form->field($model, 'file',['options' =>['class' => 'col-md-4']])->fileInput()->label( false );
-            //echo Html::tag('div','Показать:' ,['options' =>['class' => 'col-md-2']]);
-            echo $form->field($model, 'read_line_end',['options' =>['class' => 'col-md-2']])->dropDownList(array_combine( $show_arr, $show_arr ) )->label( false );
+            echo $form->field($model, 'read_line_end',['options' =>['class' => 'col-md-2']])->dropDownList(array_combine( $show_arr, $show_arr ) );
 
         }
         $this->endBlock();

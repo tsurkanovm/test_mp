@@ -21,7 +21,7 @@ class ParserController extends Controller
         $title = $this->getScenarioParameter('title');
         // $require_columns = $this->getScenarioParameter('require_columns');
 
-        $upload_form = $this->getUploadForm();
+        $upload_form = $this->getReadUploadForm();
 
         return $this->render('index', [
             'options' => ['model' => $upload_form,
@@ -46,8 +46,8 @@ class ParserController extends Controller
 
     public function actionRead()
     {
-        $upload_form = $this->getUploadForm();
-        $this->validateUploadForm( $upload_form );
+        $upload_form = $this->getReadUploadForm();
+        $this->validateReadUploadForm( $upload_form );
 
         $file_path = Yii::$aliases['@file_path'] . '/' . $upload_form->file;
         $parser_config = $this->getScenarioParameter('parser_config');
@@ -59,10 +59,12 @@ class ParserController extends Controller
         $parser->setConfiguration( $parser_config );
         $data = $parser->parse( $file_path, $custom_settings );
 
+        $write_upload_form = $this->getReadUploadForm();
         return $this->renderAjax('index', [
             'options' => [
                 'mode' => 'data',
                 'data' => $data,
+                'model' => $write_upload_form,
                 'basic_columns' => $basic_columns,
             ]
         ]);
@@ -73,32 +75,16 @@ class ParserController extends Controller
 
     }
 
-    protected function getUploadForm(){
+    public function actionWrite(){
+       $model = $this->getWriteUploadForm();
+        $this->validateWriteUploadForm($model);
+        // валидация форм
+        // сборка конфигурации парсера
+        // парсинг
+        // запись в БД
+        // удаление файла, при завершении, при отказе от записи и новом чтении (кеш?)
+        // показ результата (лог)
 
-        $parser_config = $this->getScenarioParameter('parser_config');
-        $upload_form = new UploadFileParsingForm(['parser_config' => $parser_config]);
-
-        return $upload_form;
-    }
-
-    protected function validateUploadForm(&$model)
-    {
-        if ($model->load(Yii::$app->request->post())) {
-            $model->file = Yii::$app->session->getFlash('file_name');
-
-            if (!$model->validate()) {
-                // handle with error validation form
-                $errors_str = 'Error upload form:';
-                foreach ($model->getErrors() as $error) {
-                    $errors_str .= ' ' . implode(array_values($error));
-                }
-
-                throw new HttpException(200, $errors_str);
-            }
-        } else {
-
-            throw new HttpException(200, 'Ошибка загрузки данных в форму');
-        }
 
     }
 
@@ -122,6 +108,45 @@ class ParserController extends Controller
 
             return $response;
         }
+    }
+
+    protected function validateReadUploadForm(&$model)
+    {
+        if ($model->load(Yii::$app->request->post())) {
+            $model->file = Yii::$app->session->getFlash('file_name');
+
+            if (!$model->validate()) {
+                // handle with error validation form
+                $this->generateValidateErrorException($model);
+            }
+        } else {
+
+            throw new HttpException(200, 'Ошибка загрузки данных в форму');
+        }
+
+    }
+
+    protected function validateWriteUploadForm($model)
+    {
+        if ($model->load(Yii::$app->request->post())) {
+
+            if (!$model->validate()) {
+                // handle with error validation form
+               $this->generateValidateErrorException($model);
+            }
+//            //получим колонки которые выбрал пользователь
+//            $arr_attributes = Yii::$app->request->post()['DynamicModel'];
+//            //соберем модель по полученным данным
+//            $model = DynamicFormHelper::CreateDynamicModel($arr_attributes);
+//            //добавим правила валидации (колонки должны быть те что указаны в конфиге)
+//            foreach ($arr_attributes as $key => $value) {
+//                $model->addRule($key, 'in', ['range' => array_keys(Yii::$app->multiparser->getConfiguration('csv', 'basic_column'))]);
+//            }
+        } else {
+
+            throw new HttpException(200, 'Ошибка загрузки данных в форму');
+        }
+
     }
 
     protected function getScenarioParameter($parameter = '')
@@ -148,4 +173,32 @@ class ParserController extends Controller
 
     }
 
+    protected function getReadUploadForm(){
+
+        $parser_config = $this->getScenarioParameter('parser_config');
+        $upload_form = new UploadFileParsingForm(['parser_config' => $parser_config]);
+        $upload_form->scenario = UploadFileParsingForm::SCENARIO_READ;
+
+        return $upload_form;
+    }
+
+    protected function getWriteUploadForm(){
+
+        $upload_form = new UploadFileParsingForm();
+        $upload_form->scenario = UploadFileParsingForm::SCENARIO_WRITE;
+
+        return $upload_form;
+    }
+
+    protected function generateValidateErrorException( $model ){
+
+        $errors_str = 'Error upload form:';
+        foreach ( $model->getErrors() as $error ) {
+            $errors_str .= ' ' . implode( array_values( $error ) );
+        }
+
+        throw new HttpException( 200, $errors_str );
+
+    }
 }
+
