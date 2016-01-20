@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "bbcca2b75ddbdf7f68d0c3a9fe9a694a",
+    "hash": "19c88ca7728e4be57632cb5c1230f539",
     "content-hash": "4c417baa646fac7342922b79c737508c",
     "packages": [
         {
@@ -2061,12 +2061,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/tsurkanovm/yii-multiparser.git",
-                "reference": "0f83918baff40c5123f1995b1f12a1e74f377587"
+                "reference": "9b558fda1ddbbd9b2d4b1b45a814bddc274d1495"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tsurkanovm/yii-multiparser/zipball/0f83918baff40c5123f1995b1f12a1e74f377587",
-                "reference": "0f83918baff40c5123f1995b1f12a1e74f377587",
+                "url": "https://api.github.com/repos/tsurkanovm/yii-multiparser/zipball/9b558fda1ddbbd9b2d4b1b45a814bddc274d1495",
+                "reference": "9b558fda1ddbbd9b2d4b1b45a814bddc274d1495",
                 "shasum": ""
             },
             "require": {
@@ -2098,7 +2098,7 @@
                 "xml",
                 "yii2"
             ],
-            "time": "2015-12-16 14:47:05"
+            "time": "2016-01-18 13:45:24"
         },
         {
             "name": "yiisoft/yii2",

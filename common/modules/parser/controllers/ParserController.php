@@ -4,10 +4,11 @@ namespace common\modules\parser\controllers;
 use common\components\CustomVarDamp;
 use common\modules\parser\models\UploadFileParsingForm;
 use Yii;
+use yii\multiparser\DynamicFormHelper;
 use yii\web\Controller;
 use yii\web\HttpException;
 use yii\web\Response;
-
+use yii\web\Session;
 
 
 /**
@@ -18,8 +19,8 @@ class ParserController extends Controller
 
     public function actionIndex()
     {
+
         $title = $this->getScenarioParameter('title');
-        // $require_columns = $this->getScenarioParameter('require_columns');
 
         $upload_form = $this->getReadUploadForm();
 
@@ -32,11 +33,17 @@ class ParserController extends Controller
 
     public function actionSave()
     {
-        $post = Yii::$app->request->post();
 
         if (empty($post) && !empty($_FILES)) {
-            if (move_uploaded_file($_FILES[0]['tmp_name'], Yii::$aliases['@file_path'] . '/' . basename($_FILES[0]['name']))) {
-                Yii::$app->session->setFlash('file_name', basename($_FILES[0]['name']));
+            $file_name = Yii::$aliases['@file_path'] . '/' . basename($_FILES[0]['name']);
+            if (move_uploaded_file($_FILES[0]['tmp_name'], $file_name )) {
+
+                if ($file_path = Yii::$app->session->hasFlash('file_name')) {
+                    if(file_exists($file_path))
+                        unlink($file_path);
+                }
+
+                Yii::$app->session->setFlash('file_name', $file_name, false);
                 return true;
             } else {
                 return false;
@@ -47,17 +54,14 @@ class ParserController extends Controller
     public function actionRead()
     {
         $upload_form = $this->getReadUploadForm();
-        $this->validateReadUploadForm( $upload_form );
+        $this->validateUploadForm( $upload_form );
 
         $file_path = Yii::$aliases['@file_path'] . '/' . $upload_form->file;
-        $parser_config = $this->getScenarioParameter('parser_config');
         $basic_columns = $this->getScenarioParameter('basic_columns');
         $last_line = ($upload_form->read_line_end == 'все') ? 0 : $upload_form->read_line_end;
-        $custom_settings = ['last_line' => $last_line, 'has_header_row' => false];
+        $custom_settings = ['last_line' => $last_line, 'file_path' => $file_path];
 
-        $parser = Yii::$app->controller->module->multiparser;
-        $parser->setConfiguration( $parser_config );
-        $data = $parser->parse( $file_path, $custom_settings );
+        $data = $this->parseDataBySettings($custom_settings);
 
         $write_upload_form = $this->getReadUploadForm();
         return $this->renderAjax('index', [
@@ -69,21 +73,47 @@ class ParserController extends Controller
             ]
         ]);
 
-//        if (file_exists($file_path)) {
-//            unlink($file_path);
-//        }
 
     }
 
     public function actionWrite(){
+        // static fields
        $model = $this->getWriteUploadForm();
-        $this->validateWriteUploadForm($model);
-        // валидация форм
-        // сборка конфигурации парсера
-        // парсинг
+        $this->validateUploadForm($model);
+        // dynamic fields
+        $this->validateDynamicUploadForm();
+       // prasing settings
+        $first_line = (!$model->write_line_begin) ? 0 : $model->write_line_begin;
+        $last_line = (!$model->write_line_end) ? 0 : $model->write_line_end;
+        $custom_settings = ['last_line' => $last_line,
+                            'first_line' => $first_line,
+        ];
+
+
+        $data = $this->parseDataBySettings($custom_settings);
+
+        $file_path = Yii::$app->session->getFlash( 'file_name', null, true );
+        if(file_exists($file_path))
+            unlink($file_path);
+
+        CustomVarDamp::dumpAndDie($data);
+
+        // установка ключей
         // запись в БД
         // удаление файла, при завершении, при отказе от записи и новом чтении (кеш?)
         // показ результата (лог)
+
+        $log = 'Successful';
+        return $this->renderAjax('index', [
+            'options' => [
+                'mode' => 'message',
+                'title' => $log,
+            ]
+        ]);
+
+
+
+
 
 
     }
@@ -110,10 +140,29 @@ class ParserController extends Controller
         }
     }
 
-    protected function validateReadUploadForm(&$model)
+    protected function parseDataBySettings($custom_settings){
+        if ( empty( $custom_settings['file_path'] ) ) {
+            $file_path = Yii::$app->session->getFlash('file_name');
+        } else {
+            $file_path = $custom_settings['file_path'];
+            unset( $custom_settings['file_path'] );
+        }
+        $parser_config = $this->getScenarioParameter('parser_config');
+        array_merge( $custom_settings, ['has_header_row' => false] );
+
+        $parser = Yii::$app->controller->module->multiparser;
+        $parser->setConfiguration( $parser_config );
+        $data = $parser->parse( $file_path, $custom_settings );
+
+        return $data;
+}
+
+    protected function validateUploadForm(&$model)
     {
         if ($model->load(Yii::$app->request->post())) {
-            $model->file = Yii::$app->session->getFlash('file_name');
+            if( isset( $model->file ) ){
+                $model->file = Yii::$app->session->getFlash('file_name');
+            }
 
             if (!$model->validate()) {
                 // handle with error validation form
@@ -126,27 +175,33 @@ class ParserController extends Controller
 
     }
 
-    protected function validateWriteUploadForm($model)
-    {
-        if ($model->load(Yii::$app->request->post())) {
 
-            if (!$model->validate()) {
-                // handle with error validation form
-               $this->generateValidateErrorException($model);
+
+    protected function validateDynamicUploadForm(){
+        //получим колонки которые выбрал пользователь
+        $arr_attributes = Yii::$app->request->post()['DynamicModel'];
+        //соберем модель по полученным данным
+        $dynamic_model = DynamicFormHelper::CreateDynamicModel($arr_attributes);
+
+        $require_columns = $this->getScenarioParameter('require_columns');
+        $basic_columns = $this->getScenarioParameter('basic_columns');
+
+        //добавим правила валидации (колонки должны быть те что указаны в конфиге)
+        foreach ($arr_attributes as $key => $value) {
+            $dynamic_model->addRule($key, 'in', ['range' => array_keys($basic_columns)]);
+            // ищем наличие обязательных колонок
+            $find_key = array_search( $value, $require_columns );
+            if( $find_key !== false){
+                unset( $require_columns[$find_key] );
             }
-//            //получим колонки которые выбрал пользователь
-//            $arr_attributes = Yii::$app->request->post()['DynamicModel'];
-//            //соберем модель по полученным данным
-//            $model = DynamicFormHelper::CreateDynamicModel($arr_attributes);
-//            //добавим правила валидации (колонки должны быть те что указаны в конфиге)
-//            foreach ($arr_attributes as $key => $value) {
-//                $model->addRule($key, 'in', ['range' => array_keys(Yii::$app->multiparser->getConfiguration('csv', 'basic_column'))]);
-//            }
-        } else {
-
-            throw new HttpException(200, 'Ошибка загрузки данных в форму');
         }
-
+        if( $require_columns ) {
+            throw new HttpException( 200, implode(' - обязательное поле, укажите соответствие, ', $require_columns) . ' - обязательное поле, укажите соответствие' );
+        }
+        if (!$dynamic_model->validate()) {
+            // handle with error validation form
+            $this->generateValidateErrorException($dynamic_model);
+        }
     }
 
     protected function getScenarioParameter($parameter = '')
@@ -192,7 +247,7 @@ class ParserController extends Controller
 
     protected function generateValidateErrorException( $model ){
 
-        $errors_str = 'Error upload form:';
+        $errors_str = 'Ошибка формы загрузки данных:';
         foreach ( $model->getErrors() as $error ) {
             $errors_str .= ' ' . implode( array_values( $error ) );
         }

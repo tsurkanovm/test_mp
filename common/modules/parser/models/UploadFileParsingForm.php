@@ -49,7 +49,7 @@ class UploadFileParsingForm extends Model
     {
         $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_READ] = ['read_line_end', 'file'];
-        $scenarios[self::SCENARIO_WRITE] = ['write_line_begin', 'write_line_end, update'];
+        $scenarios[self::SCENARIO_WRITE] = ['write_line_begin', 'write_line_end', 'update'];
         return $scenarios;
     }
 
@@ -61,7 +61,7 @@ class UploadFileParsingForm extends Model
             [['file'], 'file', 'extensions' =>  $this->extensions, 'checkExtensionByMimeType' => false ],
             ['write_line_begin' , 'integer', 'message' => 'Не верное значение поля \'Обрабатывать строки с\''],
             ['write_line_end' , 'integer', 'message' => 'Не верное значение поля \'Обрабатывать строки по\''],
-            ['write_line_begin', 'compare', 'compareAttribute' => 'write_line_end', 'operator' => '<=', 'message' => ' \'Обрабатывать строки с\' должно быть больше значения поля \'Обрабатывать строки по\''],
+            ['write_line_begin', 'compare', 'type' => 'number', 'compareAttribute' => 'write_line_end', 'operator' => '<=' ],//'message' => ' \'Обрабатывать строки с\' должно быть меньше значения поля \'Обрабатывать строки по\''],
         ];
     }
 

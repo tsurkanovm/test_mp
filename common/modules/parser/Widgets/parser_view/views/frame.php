@@ -43,3 +43,4 @@ echo Html::tag( 'h3', $title );
 
 <?php
 echo  Html::tag('div','',['id' => 'data-container', 'class' => 'row']);
+echo  Html::tag('div','',['id' => 'message-container', 'class' => 'row']);
