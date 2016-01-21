@@ -5,7 +5,7 @@ $(document).ready(
         var read_form = $("#read-form");
         var safe_action = read_form.data('save_action');
 
-        var files;
+        var file;
 
         // Add event for file input
         $(document).on('change', "input[type=file]" ,prepareUpload);
@@ -20,13 +20,13 @@ $(document).ready(
         // Grab the files and set them to our variable
         function prepareUpload(event)
         {
-            files = event.target.files;
+            file = event.target.files[0];
             var file_name = $(document.body).data('file_name');
             var file_modified_date = $(document.body).data('file_modified_date');
 
             if (file_name && file_modified_date) {
                 // it's a not first attempt to save file
-                if ( (files[0].lastModified == file_modified_date) && (files[0].name == file_name) ) {
+                if ( (file.lastModified == file_modified_date) && (file.name == file_name) ) {
                     // nothing changes
                     $(document.body).data('file_modified', false);
                 }else{
@@ -35,11 +35,10 @@ $(document).ready(
                 }
             } else{
                 // it's a first attempt to save file
-                $(document.body).data('file_name',files[0].name);
-                $(document.body).data('file_modified_date', files[0].lastModified);
                 $(document.body).data('file_modified', true);
             }
-
+            $(document.body).data('file_name',file.name);
+            $(document.body).data('file_modified_date', file.lastModified);
         }
 
         function updateButtonClick (  ) {
@@ -59,15 +58,12 @@ $(document).ready(
         function beforeSubmitReadForm (){
 
             var file_was_modified = $(document.body).data('file_modified');
-
+            //console.log(file_was_modified);
             // collect files for post request
             var data = new FormData(read_form);
             if ( file_was_modified ) {
                 // if it's new file - put him to server data
-                $.each(files, function(key, value)
-                {
-                    data.append(key, value);
-                });
+                data.append(0, file);
             }
 
             // reset modify flag
@@ -122,13 +118,15 @@ $(document).ready(
 
             $.post( write_form.attr('action'), post_data ).done(
                 function( result ) {
-                    message_container.html( result );
-                  //  container.append( message_container );
+                    try{
+                        container.html( JSON.parse(result).msg );
+                    }catch(e) {
+                        message_container.html( result );
+                    }
                 }
             ).fail(
                 function(){
-                    message_container.text( 'Ошибка ответа с сервера при записи данных' );
-                  //  container.append( message_container );
+                    container.text( 'Ошибка ответа с сервера при записи данных' );
                 }
             );
             return false;

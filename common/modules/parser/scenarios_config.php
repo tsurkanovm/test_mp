@@ -33,7 +33,7 @@ return [
                 'Brand',
             ],
 
-            'writer' => [],
+            'writer' => 'common\modules\parser\components\DetailsWriter',
             'title' => 'Загрузка товаров',
         ],
 
