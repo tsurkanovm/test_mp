@@ -9,12 +9,6 @@
 namespace common\modules\parser\components;
 
 
-use yii\base\ErrorException;
-use backend\models\ImportersFiles;
-use backend\models\Importers;
-use common\models\Details;
-use common\components\ModelArrayValidator;
-
 
 abstract class Writer
 {
@@ -34,7 +28,7 @@ abstract class Writer
     /**
      * @var - array - list of models (active records) - when we write to
      */
-    protected $models;
+    protected $models = [];
     /**
      * @var - object that implements MassiveDataValidatorInterface for validation data
      */
@@ -46,12 +40,14 @@ abstract class Writer
         set_time_limit(600);
         $this->data = $data;
         $this->setModels();
-
+        $this->setValidator();
     }
 
    abstract protected function setModels();
 
-   abstract protected function writeToDB();
+   abstract protected function setValidator();
+
+   abstract protected function writeToDB( $with_update );
 
 
     /**
@@ -62,11 +58,6 @@ abstract class Writer
         return $this->validated_msg;
     }
 
-    public function setValidator( MassiveDataValidatorInterface $validator ){
-
-        $this->validator = $validator;
-    }
-
     /**
      * @return mixed
      */
@@ -75,8 +66,15 @@ abstract class Writer
         return $this->hasValidationError;
     }
 
+    public function checkValidator()
+    {
+        if ( !($this->validator instanceof MassiveDataValidatorInterface) ) {
+            throw new \Exception( 'Set incorrect validator' );
+        }
+    }
 
-    public function write()
+
+    public function write( $update = false )
     {
         //3. провалидируем полученные данные моделью - Details
         $this->validateByModels();
@@ -85,7 +83,7 @@ abstract class Writer
             return false;
         }
             //5. запишем данные в связанные таблицы
-       $this->writeToDB();
+            $this->writeToDB( $update );
 
         return true;
     }

@@ -2,16 +2,17 @@
 
 namespace app\models;
 
+use common\modules\parser\components\MassiveDataSQLBuilder;
 use Yii;
 
 /**
  * This is the model class for table "details_test".
  *
- * @property integer $id
- * @property string $articul
+ * @property integer $id_details_test
+ * @property string $article
  * @property string $brand
  * @property double $price
- * @property integer $quantity
+ * @property integer $count
  * @property string $name
  * @property integer $created_at
  * @property integer $updated_at
@@ -21,6 +22,22 @@ class DetailsTest extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+
+    public function behaviors()
+    {
+        return [
+
+            'SQLBuilder' => [
+                'class' => MassiveDataSQLBuilder::className(),
+                'batch' => 500,
+                'keys' =>  [
+                    'article',
+                    'brand',
+                ],
+            ]
+        ];
+    }
+
     public static function tableName()
     {
         return 'details_test';
@@ -32,14 +49,13 @@ class DetailsTest extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-           // [['articul', 'brand', 'created_at', 'updated_at'], 'required'],
-            [['articul', 'brand'], 'required'],
+            [['article', 'brand'], 'required'],
             [['price'], 'number'],
-            [['quantity', 'created_at', 'updated_at'], 'integer'],
-            [['articul'], 'string', 'max' => 255],
+            [['count', 'created_at', 'updated_at'], 'integer'],
+            [['article'], 'string', 'max' => 255],
             [['brand'], 'string', 'max' => 32],
             [['name'], 'string', 'max' => 200],
-            [['articul'], 'unique']
+        //    [['article'], 'unique']
         ];
     }
 

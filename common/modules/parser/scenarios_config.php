@@ -20,17 +20,17 @@ return [
 
             'basic_columns' => [
                 Null => 'null',
-                'Description' => 'Название',
-                'Article' => 'Артикул',
-                'Price' => 'Цена',
-                'Brand' => 'Производитель',
-                'Count' => 'Количество',
+                'name' => 'Название',
+                'article' => 'Артикул',
+                'price' => 'Цена',
+                'brand' => 'Производитель',
+                'count' => 'Количество',
                 'discount' => 'Скидка',
             ],
 
             'require_columns' => [
-                'Article',
-                'Brand',
+                'article',
+                'brand',
             ],
 
             'writer' => 'common\modules\parser\components\DetailsWriter',

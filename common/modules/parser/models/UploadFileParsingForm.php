@@ -23,8 +23,8 @@ class UploadFileParsingForm extends Model
     public $write_line_begin;
     // last row to write in DB
     public $write_line_end;
-    // bool for define specific write action - update or write
-    public $update = false;
+    // int(0,1) for define specific write action - update or write
+    public $update = 0;
 
     // attribute for parser extensions
     protected $extensions;

@@ -14,11 +14,11 @@ class m160121_161248_detailsTestTable extends Migration
         }
 
         $this->createTable('{{%details_test}}', [
-            'id' => $this->primaryKey(),
-            'articul' => $this->string()->notNull()->unique(),
+            'id_details_test' => $this->primaryKey(),
+            'article' => $this->string()->notNull()->unique(),
             'brand' => $this->string(32)->notNull(),
             'price' => $this->float(10,2),
-            'quantity' => $this->integer(10,2),
+            'count' => $this->integer(10,2),
             'name' => $this->string(200),
             'created_at' => $this->integer(),
             'updated_at' => $this->integer(),

@@ -44,14 +44,14 @@ $(document).ready(
         function updateButtonClick (  ) {
             // marked that update-button was clicked
             var update_field = $("input[name|='UploadFileParsingForm[update]']");
-            update_field.val( true );
+            update_field.val( 1 );
 
         }
 
         function writeButtonClick (  ) {
             // marked that write-button was clicked
             var update_field = $("input[name|='UploadFileParsingForm[update]']");
-            update_field.val( false );
+            update_field.val( '' );
 
         }
 
@@ -119,8 +119,21 @@ $(document).ready(
             $.post( write_form.attr('action'), post_data ).done(
                 function( result ) {
                     try{
-                        container.html( JSON.parse(result).msg );
+                        // log
+                        var result_arr = JSON.parse(result);
+                        container.html( result_arr.msg );
+                        // after writing - reset file
+                        $("#uploadfileparsingform-file").val('');
+                        $(document.body).data('file_name', '');
+                        if (result_arr.error) {
+                            container.addClass('bg-warning');
+                        }else{
+                            container.addClass('bg-success');
+                        }
+                        message_container.text('');
                     }catch(e) {
+                        // error
+                        message_container.addClass('bg-warning');
                         message_container.html( result );
                     }
                 }
@@ -129,6 +142,8 @@ $(document).ready(
                     container.text( 'Ошибка ответа с сервера при записи данных' );
                 }
             );
+
+
             return false;
         }
     }

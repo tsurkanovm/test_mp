@@ -100,17 +100,24 @@ class ParserController extends Controller
         //CustomVarDamp::dumpAndDie($data);
         $writer_class = $this->getScenarioParameter('writer');
         $writer = new $writer_class( $data );
-        $writer->write();
-        $log = $writer->getValidatedMsg();
+        try {
+            $writer->write( $model->update );
+            $log = $writer->getValidatedMsg();
+            $has_error = $writer->hasValidationError;
+        } catch (\Exception $e) {
+            $log = 'Ошибка записи данных в базу данных ' . $e->getMessage();
+            $has_error = true;
+        }
 
-        //$log = 'Successful';
         $msg = $this->renderAjax('index', [
             'options' => [
                 'mode' => 'message',
                 'title' => $log,
             ]
         ]);
-        $response = json_encode( ['msg' => $msg] );
+        $response_array = ['msg' => $msg, 'error' => $has_error];
+
+        $response = json_encode( $response_array );
 
         return $response;
     }
