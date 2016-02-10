@@ -2061,12 +2061,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/tsurkanovm/yii-multiparser.git",
-                "reference": "9b558fda1ddbbd9b2d4b1b45a814bddc274d1495"
+                "reference": "67c70e98de12d25ed167fc3c81aef50d26f66a4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tsurkanovm/yii-multiparser/zipball/9b558fda1ddbbd9b2d4b1b45a814bddc274d1495",
-                "reference": "9b558fda1ddbbd9b2d4b1b45a814bddc274d1495",
+                "url": "https://api.github.com/repos/tsurkanovm/yii-multiparser/zipball/67c70e98de12d25ed167fc3c81aef50d26f66a4e",
+                "reference": "67c70e98de12d25ed167fc3c81aef50d26f66a4e",
                 "shasum": ""
             },
             "require": {
@@ -2075,7 +2075,9 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "yii\\multiparser\\": "lib\\"
+                    "yii\\multiparser\\": "lib\\",
+                    "yii\\multiparser\\module\\": "lib\\module\\",
+                    "yii\\multiparser\\widgets\\": "lib\\module\\widgets\\parser_view\\"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -2098,7 +2100,7 @@
                 "xml",
                 "yii2"
             ],
-            "time": "2016-01-18 13:45:24"
+            "time": "2016-02-10 09:33:44"
         },
         {
             "name": "yiisoft/yii2",

@@ -1,27 +1,15 @@
 <?php
 namespace common\modules\parser;
 
-class Module extends \yii\base\Module
+class Module extends \yii\multiparser\module\MultiparserModule
 {
-	public function init()
-	{
-		parent::init();
+    public function init(){
 
-        $this->setAliases([
-            '@file_path' => dirname(__DIR__). '/parser/files',
-        ]);
+        $this->files_directory_path = dirname(__DIR__). '/parser/files';
+        $this->configure_file       = __DIR__ . '/config.php';
+        $this->error_action         = 'parser/details/error';
 
-		\Yii::configure($this, require(__DIR__.'/config.php'));
+        parent::init();
 
-        //register custom error handler for module
-        $handler = new \yii\web\ErrorHandler;
-        $handler->errorAction = 'parser/parser/error';
-      //  $handler->discardExistingOutput = false;
-        \Yii::$app->set('errorHandler', $handler);
-        $handler->register();
-	}
-
-
-
-
+    }
 }

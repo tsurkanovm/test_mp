@@ -1,8 +1,8 @@
 <?php
 
-namespace app\models;
+namespace common\modules\parser\models;
 
-use common\modules\parser\components\MassiveDataSQLBuilder;
+use yii\multiparser\module\MassiveDataSQLBuilder;
 use Yii;
 
 /**
@@ -32,7 +32,7 @@ class DetailsTest extends \yii\db\ActiveRecord
                 'batch' => 500,
                 'keys' =>  [
                     'article',
-                    'brand',
+                   // 'brand',
                 ],
             ]
         ];
